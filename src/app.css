@@ -1,0 +1,131 @@
+@import 'tailwindcss';
+
+/* === Dark Mode === */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* === Theme === */
+@theme {
+	/* Colors */
+	--color-expense: oklch(0.7 0.19 22);
+	--color-income: oklch(0.72 0.17 155);
+	--color-surface: oklch(0.98 0.005 260);
+	--color-surface-dark: oklch(0.2 0.01 260);
+	--color-primary: oklch(0.62 0.2 260);
+	--color-primary-light: oklch(0.72 0.15 260);
+	--color-warning: oklch(0.75 0.18 85);
+	--color-danger: oklch(0.65 0.22 25);
+
+	/* Typography */
+	--font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+	--font-mono: ui-monospace, 'SF Mono', monospace;
+
+	/* Animations */
+	--ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+	--animate-slide-up: slide-up 0.3s var(--ease-spring);
+	--animate-fade-in: fade-in 0.2s ease-out;
+
+	/* Spacing / Radius */
+	--radius-card: 0.875rem;
+}
+
+@keyframes slide-up {
+	from {
+		transform: translateY(100%);
+		opacity: 0;
+	}
+	to {
+		transform: translateY(0);
+		opacity: 1;
+	}
+}
+
+@keyframes fade-in {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+/* === Semantic Colors (light/dark) === */
+:root {
+	--app-bg: oklch(0.98 0.005 260);
+	--app-text: oklch(0.15 0.01 260);
+	--app-text-secondary: oklch(0.45 0.01 260);
+	--app-border: oklch(0.9 0.005 260);
+	--app-card: oklch(1 0 0);
+	--app-input-bg: oklch(0.95 0.005 260);
+}
+
+:root:where(.dark) {
+	--app-bg: oklch(0.15 0.01 260);
+	--app-text: oklch(0.93 0.005 260);
+	--app-text-secondary: oklch(0.6 0.01 260);
+	--app-border: oklch(0.28 0.01 260);
+	--app-card: oklch(0.22 0.01 260);
+	--app-input-bg: oklch(0.18 0.01 260);
+}
+
+/* === iOS Safe Area Utilities === */
+@utility pt-safe {
+	padding-top: env(safe-area-inset-top);
+}
+
+@utility pb-safe {
+	padding-bottom: env(safe-area-inset-bottom);
+}
+
+@utility px-safe {
+	padding-left: env(safe-area-inset-left);
+	padding-right: env(safe-area-inset-right);
+}
+
+@utility pb-safe-4 {
+	padding-bottom: calc(env(safe-area-inset-bottom) + 1rem);
+}
+
+@utility pb-safe-16 {
+	padding-bottom: calc(env(safe-area-inset-bottom) + 4rem);
+}
+
+/* === iOS Interaction Utilities === */
+@utility tap-transparent {
+	-webkit-tap-highlight-color: transparent;
+}
+
+/* === Standalone Mode Variant === */
+@custom-variant standalone {
+	@media (display-mode: standalone) {
+		@slot;
+	}
+}
+
+/* === Base Styles === */
+html {
+	touch-action: manipulation;
+	-webkit-text-size-adjust: 100%;
+}
+
+body {
+	background-color: var(--app-bg);
+	color: var(--app-text);
+	font-family: var(--font-sans);
+	overscroll-behavior: none;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+/* === Scrollbar Hiding === */
+.scrollbar-none {
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+	display: none;
+}
+
+/* === Keyboard open state === */
+:root {
+	--keyboard-height: 0px;
+}

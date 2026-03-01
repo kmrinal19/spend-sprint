@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { db } from '../index.js';
+import { today } from '$lib/utils/date.js';
 import {
 	addExpense,
 	updateExpense,
@@ -89,7 +90,7 @@ describe('getExpensesByDateRange', () => {
 describe('checkDuplicate', () => {
 	it('detects duplicate SMS within 5 minutes', async () => {
 		const sms = 'Rs.500 debited from a/c **1234';
-		await addExpense(makeExpense({ rawSMS: sms, date: new Date().toISOString().slice(0, 10) }));
+		await addExpense(makeExpense({ rawSMS: sms, date: today() }));
 
 		const isDup = await checkDuplicate(sms);
 		expect(isDup).toBe(true);
@@ -97,7 +98,7 @@ describe('checkDuplicate', () => {
 
 	it('does not flag different SMS as duplicate', async () => {
 		await addExpense(
-			makeExpense({ rawSMS: 'Rs.500 debited', date: new Date().toISOString().slice(0, 10) })
+			makeExpense({ rawSMS: 'Rs.500 debited', date: today() })
 		);
 		const isDup = await checkDuplicate('Rs.600 debited');
 		expect(isDup).toBe(false);

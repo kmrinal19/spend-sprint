@@ -94,7 +94,7 @@
 		<div class="flex items-baseline justify-between">
 			<div>
 				<div class="text-xs text-(--app-text-secondary) uppercase">
-					{MONTH_NAMES_SHORT[currentMonth.month - 1]} {currentMonth.year}
+					Spent in {MONTH_NAMES_SHORT[currentMonth.month - 1]} {currentMonth.year}
 				</div>
 				<div class="text-2xl font-bold text-(--app-text)">
 					{formatCurrency(monthlyTotal)}

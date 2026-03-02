@@ -30,5 +30,10 @@
   },
   "dependencies": {
     "dexie": "^4.3.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
   }
 }

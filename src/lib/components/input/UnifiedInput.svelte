@@ -11,7 +11,9 @@
 		setPreview,
 		clearInput,
 		getIsProcessing,
-		setIsProcessing
+		setIsProcessing,
+		getParseError,
+		setParseError
 	} from '$lib/stores/input.svelte.js';
 	import { getCurrentMonth } from '$lib/stores/expenses.svelte.js';
 	import type { ParsedExpense, NewExpense } from '$lib/types/index.js';
@@ -27,15 +29,18 @@
 	let debounceTimer: ReturnType<typeof setTimeout> | undefined;
 	let inputEl: HTMLInputElement | undefined = $state();
 	let isDuplicate = $state(false);
+	let noteText = $state('');
 
 	let text = $derived(getInputText());
 	let preview = $derived(getPreview());
 	let isProcessing = $derived(getIsProcessing());
+	let parseError = $derived(getParseError());
 
 	function handleInput(e: Event) {
 		const value = (e.target as HTMLInputElement).value;
 		setInputText(value);
 		isDuplicate = false;
+		setParseError(null);
 
 		clearTimeout(debounceTimer);
 		if (!value.trim()) {
@@ -47,6 +52,9 @@
 			setIsProcessing(true);
 			const result = await parseInput(value);
 			setPreview(result);
+			if (!result && value.trim().length > 2) {
+				setParseError("Couldn't understand that. Tap + to enter manually.");
+			}
 			setIsProcessing(false);
 		}, 200);
 	}
@@ -58,9 +66,14 @@
 		setInputText(clipText);
 		setIsProcessing(true);
 		isDuplicate = false;
+		setParseError(null);
 
 		const result = await parseInput(clipText);
 		setPreview(result);
+
+		if (!result && clipText.trim().length > 2) {
+			setParseError("Couldn't understand that. Tap + to enter manually.");
+		}
 
 		// Check for duplicate SMS
 		if (result?.source === 'clipboard') {
@@ -74,6 +87,28 @@
 		}
 
 		setIsProcessing(false);
+	}
+
+	function startManualEntry() {
+		setParseError(null);
+		const blank: ParsedExpense = {
+			amount: null,
+			type: 'debit',
+			merchant: null,
+			category: null,
+			paymentMethod: null,
+			creditCard: null,
+			bankAccount: null,
+			date: today(),
+			reference: null,
+			rawText: '',
+			source: 'manual',
+			confidence: 1,
+			isCCBillPayment: false,
+			recurring: null
+		};
+		setPreview(blank);
+		noteText = '';
 	}
 
 	function handleUpdatePreview(patch: Partial<ParsedExpense>) {
@@ -96,7 +131,7 @@
 			creditCard: p.creditCard,
 			bankAccount: p.bankAccount,
 			tags: [],
-			note: '',
+			note: noteText,
 			isRecurring: false,
 			recurringId: null,
 			rawSMS: p.source === 'clipboard' ? p.rawText : null,
@@ -116,6 +151,7 @@
 
 		clearInput();
 		isDuplicate = false;
+		noteText = '';
 		inputEl?.focus();
 	}
 
@@ -145,6 +181,7 @@
 	function handleDismiss() {
 		clearInput();
 		isDuplicate = false;
+		noteText = '';
 	}
 </script>
 
@@ -156,14 +193,23 @@
 		ondismiss={handleDismiss}
 	/>
 
+	<!-- Parse Error -->
+	{#if parseError && !preview}
+		<div class="mx-4 mb-2 rounded-xl bg-warning/10 px-4 py-2.5 text-sm text-warning">
+			{parseError}
+		</div>
+	{/if}
+
 	<!-- Preview Card -->
 	{#if preview}
 		<div class="px-4 pb-2">
 			<PreviewCard
 				parsed={preview}
+				note={noteText}
 				onconfirm={handleConfirm}
 				ondismiss={handleDismiss}
 				onupdate={handleUpdatePreview}
+				onnotechange={(v) => (noteText = v)}
 			/>
 		</div>
 	{/if}
@@ -188,5 +234,12 @@
 		{#if isProcessing}
 			<div class="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
 		{/if}
+		<button
+			class="flex min-h-11 min-w-11 items-center justify-center rounded-xl bg-primary/10 text-primary font-bold text-xl tap-transparent active:bg-primary/20"
+			onclick={startManualEntry}
+			aria-label="Manual entry"
+		>
+			+
+		</button>
 	</div>
 </div>

@@ -9,7 +9,7 @@ export const SMS_TEMPLATES: SMSRegexTemplate[] = [
 	{
 		bank: 'HDFC',
 		pattern:
-			/Rs\.?\s?(?<amount>[\d,]+\.?\d*)\s+(?<type>debited|credited)\s+(?:from|to)\s+a\/c\s+\*{0,2}(?<account>\d{4}).*?(?:to|at|by)\s+(?:VPA\s+)?(?<merchant>[\w\s.@]+?)(?:\s*\(|\s+UPI|\s+on|\s+Ref)/i
+			/Rs\.?\s?(?<amount>[\d,]+\.?\d*)\s+(?<type>debited|credited)\s+(?:from|to)\s+(?:your\s+)?a\/c\s+\*{0,2}(?<account>\d{4})(?:.*?(?:to|at|by)\s+(?:VPA\s+)?(?<merchant>[\w\s.@]+?)(?:\s*\(|\s+UPI|\s+on|\s+Ref|\s+bill|\s*$))?/i
 	},
 	{
 		bank: 'SBI',

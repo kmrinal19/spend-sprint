@@ -40,7 +40,7 @@ export async function exportToCSV(): Promise<string> {
 		e.note
 	]);
 
-	return [headers, ...rows].map((row) => row.map((v) => `"${v.replace(/"/g, '""')}"`).join(',')).join('\n');
+	return [headers, ...rows].map((row) => row.map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
 }
 
 export function downloadFile(content: string, filename: string, mimeType: string) {

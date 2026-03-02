@@ -26,7 +26,6 @@
 	let editValue = $state('');
 	let showCategoryBar = $state(false);
 	let showNote = $state(false);
-	let blurTimer: ReturnType<typeof setTimeout> | undefined;
 
 	let category = $derived(parsed.category !== null ? getCategoryById(parsed.category) : null);
 	let canConfirm = $derived(parsed.amount !== null);
@@ -50,13 +49,16 @@
 		node.focus();
 	}
 
-	function handleFieldBlur() {
-		clearTimeout(blurTimer);
-		blurTimer = setTimeout(commitEdit, 150);
+	function handleCardFocusOut(e: FocusEvent) {
+		const card = e.currentTarget as HTMLElement;
+		requestAnimationFrame(() => {
+			if (!card.contains(document.activeElement)) {
+				commitEdit();
+			}
+		});
 	}
 
 	function ensureCommitted() {
-		clearTimeout(blurTimer);
 		commitEdit();
 	}
 
@@ -107,11 +109,9 @@
 	function handleKeydown(e: KeyboardEvent) {
 		if (e.key === 'Enter') {
 			e.preventDefault();
-			clearTimeout(blurTimer);
 			commitEdit();
 		}
 		if (e.key === 'Escape') {
-			clearTimeout(blurTimer);
 			editingField = null;
 		}
 	}
@@ -119,7 +119,7 @@
 	const paymentMethods = Object.entries(PAYMENT_METHOD_LABELS) as [PaymentMethod, string][];
 </script>
 
-<div class="animate-slide-up rounded-2xl bg-(--app-card) p-4 shadow-lg ring-1 ring-(--app-border)">
+<div class="animate-slide-up rounded-2xl bg-(--app-card) p-4 shadow-lg ring-1 ring-(--app-border)" onfocusout={handleCardFocusOut}>
 	<!-- Amount & Type -->
 	<div class="flex items-center justify-between">
 		<div class="text-2xl font-bold">
@@ -128,7 +128,6 @@
 					type="number"
 					inputmode="decimal"
 					bind:value={editValue}
-					onblur={handleFieldBlur}
 					onkeydown={handleKeydown}
 					placeholder="0.00"
 					class="w-32 bg-transparent text-2xl font-bold outline-none text-(--app-text) border-b-2 border-primary"
@@ -166,7 +165,6 @@
 				<input
 					type="text"
 					bind:value={editValue}
-					onblur={handleFieldBlur}
 					onkeydown={handleKeydown}
 					placeholder="Merchant name"
 					class="flex-1 bg-transparent outline-none text-(--app-text) border-b border-primary"
@@ -186,7 +184,6 @@
 				<input
 					type="date"
 					bind:value={editValue}
-					onblur={handleFieldBlur}
 					onkeydown={handleKeydown}
 					max={today()}
 					class="flex-1 bg-transparent outline-none text-(--app-text) border-b border-primary"
@@ -206,7 +203,6 @@
 				<select
 					bind:value={editValue}
 					onchange={commitEdit}
-					onblur={handleFieldBlur}
 					class="flex-1 bg-transparent outline-none text-(--app-text) border-b border-primary"
 					use:autoFocus
 				>
@@ -284,7 +280,7 @@
 		</button>
 		<button
 			class="rounded-xl px-4 py-2.5 text-(--app-text-secondary) tap-transparent active:bg-(--app-input-bg)"
-			onclick={() => { clearTimeout(blurTimer); editingField = null; ondismiss(); }}
+			onclick={() => { editingField = null; ondismiss(); }}
 		>
 			Cancel
 		</button>

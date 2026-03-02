@@ -90,6 +90,8 @@
 	}
 
 	function startManualEntry() {
+		clearTimeout(debounceTimer);
+		setInputText('');
 		setParseError(null);
 		const blank: ParsedExpense = {
 			amount: null,

@@ -26,6 +26,7 @@
 	let editValue = $state('');
 	let showCategoryBar = $state(false);
 	let showNote = $state(false);
+	let blurTimer: ReturnType<typeof setTimeout> | undefined;
 
 	let category = $derived(parsed.category !== null ? getCategoryById(parsed.category) : null);
 	let canConfirm = $derived(parsed.amount !== null);
@@ -49,7 +50,18 @@
 		node.focus();
 	}
 
+	function handleFieldBlur() {
+		clearTimeout(blurTimer);
+		blurTimer = setTimeout(commitEdit, 150);
+	}
+
+	function ensureCommitted() {
+		clearTimeout(blurTimer);
+		commitEdit();
+	}
+
 	function startEdit(field: 'amount' | 'merchant' | 'date' | 'payment') {
+		ensureCommitted();
 		editingField = field;
 		switch (field) {
 			case 'amount':
@@ -95,9 +107,13 @@
 	function handleKeydown(e: KeyboardEvent) {
 		if (e.key === 'Enter') {
 			e.preventDefault();
+			clearTimeout(blurTimer);
 			commitEdit();
 		}
-		if (e.key === 'Escape') editingField = null;
+		if (e.key === 'Escape') {
+			clearTimeout(blurTimer);
+			editingField = null;
+		}
 	}
 
 	const paymentMethods = Object.entries(PAYMENT_METHOD_LABELS) as [PaymentMethod, string][];
@@ -112,7 +128,7 @@
 					type="number"
 					inputmode="decimal"
 					bind:value={editValue}
-					onblur={commitEdit}
+					onblur={handleFieldBlur}
 					onkeydown={handleKeydown}
 					placeholder="0.00"
 					class="w-32 bg-transparent text-2xl font-bold outline-none text-(--app-text) border-b-2 border-primary"
@@ -135,7 +151,7 @@
 				{parsed.type === 'credit'
 				? 'bg-income/10 text-income'
 				: 'bg-expense/10 text-expense'}"
-			onclick={() => onupdate({ type: parsed.type === 'debit' ? 'credit' : 'debit' })}
+			onclick={() => { ensureCommitted(); onupdate({ type: parsed.type === 'debit' ? 'credit' : 'debit' }); }}
 		>
 			{parsed.type === 'debit' ? 'Debit' : 'Credit'}
 		</button>
@@ -150,7 +166,7 @@
 				<input
 					type="text"
 					bind:value={editValue}
-					onblur={commitEdit}
+					onblur={handleFieldBlur}
 					onkeydown={handleKeydown}
 					placeholder="Merchant name"
 					class="flex-1 bg-transparent outline-none text-(--app-text) border-b border-primary"
@@ -170,7 +186,7 @@
 				<input
 					type="date"
 					bind:value={editValue}
-					onblur={commitEdit}
+					onblur={handleFieldBlur}
 					onkeydown={handleKeydown}
 					max={today()}
 					class="flex-1 bg-transparent outline-none text-(--app-text) border-b border-primary"
@@ -190,7 +206,7 @@
 				<select
 					bind:value={editValue}
 					onchange={commitEdit}
-					onblur={commitEdit}
+					onblur={handleFieldBlur}
 					class="flex-1 bg-transparent outline-none text-(--app-text) border-b border-primary"
 					use:autoFocus
 				>
@@ -215,7 +231,7 @@
 		<!-- Category -->
 		<button
 			class="flex min-h-8 items-center gap-2 tap-transparent"
-			onclick={() => (showCategoryBar = !showCategoryBar)}
+			onclick={() => { ensureCommitted(); showCategoryBar = !showCategoryBar; }}
 		>
 			<span class="w-5 text-center">{category?.icon ?? '📦'}</span>
 			<span>{category?.name ?? 'Select category'}</span>
@@ -247,7 +263,7 @@
 		{:else}
 			<button
 				class="text-sm text-(--app-text-secondary) tap-transparent"
-				onclick={() => (showNote = true)}
+				onclick={() => { ensureCommitted(); showNote = true; }}
 			>
 				+ Add note
 			</button>
@@ -261,14 +277,14 @@
 				{canConfirm
 				? 'bg-primary text-white active:bg-primary/80'
 				: 'bg-primary/30 text-white/50 pointer-events-none'}"
-			onclick={onconfirm}
+			onclick={() => { ensureCommitted(); onconfirm(); }}
 			disabled={!canConfirm}
 		>
 			Add Expense
 		</button>
 		<button
 			class="rounded-xl px-4 py-2.5 text-(--app-text-secondary) tap-transparent active:bg-(--app-input-bg)"
-			onclick={ondismiss}
+			onclick={() => { clearTimeout(blurTimer); editingField = null; ondismiss(); }}
 		>
 			Cancel
 		</button>
